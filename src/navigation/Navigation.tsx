@@ -1,17 +1,18 @@
 import React, {useContext} from 'react';
-import {ActivityIndicator} from 'react-native';
 import {createStackNavigator} from '@react-navigation/stack';
 
 import {AuthContext} from '../context/auth/AuthContext';
 
 import {LoginScreen} from '../screens/Login/LoginScreen';
+import {Loading} from '../components/Loading';
+import {HomeScreen} from '../screens/Home/HomeScreen';
 
 const Stack = createStackNavigator();
 
 export const Navigator = () => {
 	const {status} = useContext(AuthContext);
 
-	/* if (status === 'checking') return <ActivityIndicator />; */
+	if (status === 'checking') return <Loading />;
 
 	return (
 		<Stack.Navigator
@@ -22,7 +23,11 @@ export const Navigator = () => {
 				}
 			}}
 		>
-			<Stack.Screen name="LoginScreen" component={LoginScreen} />
+			{status !== 'authenticated' ? (
+				<Stack.Screen name="LoginScreen" component={LoginScreen} />
+			) : (
+				<Stack.Screen name="HomeScreen" component={HomeScreen} />
+			)}
 		</Stack.Navigator>
 	);
 };

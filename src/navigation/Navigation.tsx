@@ -6,6 +6,7 @@ import {AuthContext} from '../context/auth/AuthContext';
 import {LoginScreen} from '../screens/Login/LoginScreen';
 import {Loading} from '../components/Loading';
 import {HomeScreen} from '../screens/Home/HomeScreen';
+import {RegisterScreen} from '../screens/Login/RegisterScreen';
 
 const Stack = createStackNavigator();
 
@@ -24,7 +25,10 @@ export const Navigator = () => {
 			}}
 		>
 			{status !== 'authenticated' ? (
-				<Stack.Screen name="LoginScreen" component={LoginScreen} />
+				<>
+					<Stack.Screen name="LoginScreen" component={LoginScreen} />
+					<Stack.Screen name="RegisterScreen" component={RegisterScreen} />
+				</>
 			) : (
 				<Stack.Screen name="HomeScreen" component={HomeScreen} />
 			)}

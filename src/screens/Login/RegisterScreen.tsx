@@ -1,30 +1,30 @@
-import React, {useEffect, useContext} from 'react';
+import React, {useContext, useEffect} from 'react';
 import {
+	KeyboardAvoidingView,
+	Platform,
 	Text,
 	View,
 	TextInput,
-	Platform,
-	KeyboardAvoidingView,
+	TouchableOpacity,
 	Keyboard,
 	Alert,
-	TouchableOpacity,
 	ActivityIndicator
 } from 'react-native';
 
-import {StackScreenProps} from '@react-navigation/stack';
 import {AuthContext} from '../../context/auth/AuthContext';
 import {loginStyles} from '../../theme/loginTheme';
-import {useForm} from '../../hooks/useForm';
-import {Background} from '../../components/Background';
+
 import {WhiteLogo} from '../../components/WhiteLogo';
-import {Loading} from '../../components/Loading';
+import {useForm} from '../../hooks/useForm';
+import {StackScreenProps} from '@react-navigation/stack';
 
 interface Props extends StackScreenProps<any, any> {}
 
-export const LoginScreen = ({navigation}: Props) => {
-	const {wait, signIn, errorMessage, removeError} = useContext(AuthContext);
+export const RegisterScreen = ({navigation}: Props) => {
+	const {wait, signUp, errorMessage, removeError} = useContext(AuthContext);
 
-	const {email, password, onChange} = useForm({
+	const {email, password, name, onChange} = useForm({
+		name: '',
 		email: '',
 		password: ''
 	});
@@ -32,7 +32,7 @@ export const LoginScreen = ({navigation}: Props) => {
 	useEffect(() => {
 		if (errorMessage.length === 0) return;
 
-		Alert.alert('Login incorrecto', errorMessage, [
+		Alert.alert('Registro incorrecto', errorMessage, [
 			{
 				text: 'Ok',
 				onPress: removeError
@@ -40,26 +40,44 @@ export const LoginScreen = ({navigation}: Props) => {
 		]);
 	}, [errorMessage]);
 
-	const onLogin = () => {
-		console.log({email, password});
+	const onRegister = () => {
+		console.log({email, password, name});
 		Keyboard.dismiss();
-		signIn({email, password});
+		signUp({
+			name,
+			email,
+			password
+		});
 	};
 
 	return (
 		<>
-			{/* Background */}
-			<Background />
-
 			<KeyboardAvoidingView
-				style={{flex: 1}}
+				style={{flex: 1, backgroundColor: '#5856D6'}}
 				behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
 			>
 				<View style={loginStyles.formContainer}>
 					{/* Keyboard avoid view */}
 					<WhiteLogo />
 
-					<Text style={loginStyles.title}>Login</Text>
+					<Text style={loginStyles.title}>Registro</Text>
+
+					<Text style={loginStyles.label}>Nombre:</Text>
+					<TextInput
+						placeholder="Ingrese su nombre:"
+						placeholderTextColor="rgba(255,255,255,0.4)"
+						underlineColorAndroid="white"
+						style={[
+							loginStyles.inputField,
+							Platform.OS === 'ios' && loginStyles.inputFieldIOS
+						]}
+						selectionColor="white"
+						onChangeText={(value) => onChange(value, 'name')}
+						value={name}
+						onSubmitEditing={onRegister}
+						autoCapitalize="words"
+						autoCorrect={false}
+					/>
 
 					<Text style={loginStyles.label}>Email:</Text>
 					<TextInput
@@ -74,7 +92,7 @@ export const LoginScreen = ({navigation}: Props) => {
 						selectionColor="white"
 						onChangeText={(value) => onChange(value, 'email')}
 						value={email}
-						onSubmitEditing={onLogin}
+						onSubmitEditing={onRegister}
 						autoCapitalize="none"
 						autoCorrect={false}
 					/>
@@ -92,7 +110,7 @@ export const LoginScreen = ({navigation}: Props) => {
 						selectionColor="white"
 						onChangeText={(value) => onChange(value, 'password')}
 						value={password}
-						onSubmitEditing={onLogin}
+						onSubmitEditing={onRegister}
 						autoCapitalize="none"
 						autoCorrect={false}
 					/>
@@ -100,25 +118,24 @@ export const LoginScreen = ({navigation}: Props) => {
 					{/* Boton login */}
 					<View style={loginStyles.buttonContainer}>
 						<TouchableOpacity
-							activeOpacity={wait ? 1 : 0.8}
+							activeOpacity={0.8}
 							style={loginStyles.button}
-							onPress={wait ? () => {} : onLogin}
+							onPress={onRegister}
 						>
 							<Text style={loginStyles.buttonText}>
-								{wait ? <ActivityIndicator /> : 'Login'}
+								{wait ? <ActivityIndicator /> : 'Crear cuenta'}
 							</Text>
 						</TouchableOpacity>
 					</View>
 
 					{/* Crear una nueva cuenta */}
-					<View style={loginStyles.newUserContainer}>
-						<TouchableOpacity
-							activeOpacity={0.8}
-							onPress={() => navigation.replace('RegisterScreen')}
-						>
-							<Text style={loginStyles.buttonText}>Crear cuenta</Text>
-						</TouchableOpacity>
-					</View>
+					<TouchableOpacity
+						onPress={() => navigation.replace('LoginScreen')}
+						activeOpacity={0.8}
+						style={loginStyles.newUserContainer}
+					>
+						<Text style={loginStyles.buttonText}>Ir al Login</Text>
+					</TouchableOpacity>
 				</View>
 			</KeyboardAvoidingView>
 		</>

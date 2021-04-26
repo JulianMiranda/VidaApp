@@ -10,6 +10,7 @@ import {authReducer, AuthState} from './authReducer';
 
 type AuthContextProps = {
 	status: 'checking' | 'authenticated' | 'not-authenticated';
+	wait: boolean;
 	user: User | null;
 	errorMessage: string;
 	signUp: (registerData: RegisterData) => void;
@@ -20,6 +21,7 @@ type AuthContextProps = {
 
 const authInicialState: AuthState = {
 	status: 'checking',
+	wait: false,
 	user: null,
 	errorMessage: ''
 };
@@ -41,7 +43,7 @@ export const AuthProvider = ({children}: any) => {
 
 		// Hay token
 		try {
-			const resp = await vidaApi.get('/login');
+			const resp = await vidaApi.get<User>('/login');
 			if (resp.status !== 200) {
 				return dispatch({type: 'notAuthenticated'});
 			}
@@ -59,11 +61,11 @@ export const AuthProvider = ({children}: any) => {
 
 	const signIn = async ({email, password}: LoginData) => {
 		try {
+			dispatch({type: 'initCheck'});
 			firebase
 				.auth()
 				.signInWithEmailAndPassword(email, password)
-				.then((res) => {
-					console.log('res', res);
+				.then(() => {
 					checkToken();
 				})
 				.catch((err) => {
@@ -82,7 +84,32 @@ export const AuthProvider = ({children}: any) => {
 		}
 	};
 
-	const signUp = async ({name, email, password}: RegisterData) => {};
+	const signUp = async ({name, email, password}: RegisterData) => {
+		dispatch({type: 'initCheck'});
+		firebase
+			.auth()
+			.createUserWithEmailAndPassword(email, password)
+			.then(({user}) => {
+				user
+					?.updateProfile({displayName: name})
+					.then(async () => {
+						let forceRefresh;
+						await firebase
+							.auth()
+							.currentUser?.getIdToken((forceRefresh = true));
+						checkToken();
+					})
+					.catch(() =>
+						dispatch({
+							type: 'addError',
+							payload: 'Error al actualizar nombre'
+						})
+					);
+			})
+			.catch(() =>
+				dispatch({type: 'addError', payload: 'Error al crear usuario'})
+			);
+	};
 
 	const logOut = async () => {
 		firebase.auth().signOut();

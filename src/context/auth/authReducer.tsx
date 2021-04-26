@@ -4,6 +4,7 @@ export interface AuthState {
 	status: 'checking' | 'authenticated' | 'not-authenticated';
 	user: User | null;
 	errorMessage: string;
+	wait: boolean;
 }
 
 type AuthAction =
@@ -11,7 +12,8 @@ type AuthAction =
 	| {type: 'signUp'; payload: {user: User}}
 	| {type: 'addError'; payload: string}
 	| {type: 'removeError'}
-	| {type: 'logout'};
+	| {type: 'logout'}
+	| {type: 'initCheck'};
 
 export const authReducer = (
 	state: AuthState,
@@ -23,7 +25,8 @@ export const authReducer = (
 			return {
 				...state,
 				status: 'not-authenticated',
-				user: null
+				user: null,
+				wait: false
 			};
 
 		case 'addError':
@@ -31,13 +34,20 @@ export const authReducer = (
 				...state,
 				user: null,
 				status: 'not-authenticated',
-				errorMessage: action.payload
+				errorMessage: action.payload,
+				wait: false
 			};
 
 		case 'removeError':
 			return {
 				...state,
-				errorMessage: ''
+				errorMessage: '',
+				wait: false
+			};
+		case 'initCheck':
+			return {
+				...state,
+				wait: true
 			};
 
 		case 'signUp':
@@ -45,7 +55,8 @@ export const authReducer = (
 				...state,
 				errorMessage: '',
 				status: 'authenticated',
-				user: action.payload.user
+				user: action.payload.user,
+				wait: false
 			};
 
 		default:
